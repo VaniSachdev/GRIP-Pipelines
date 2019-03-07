@@ -1,0 +1,349 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Courier New;}}
+{\*\generator Riched20 10.0.17134}\viewkind4\uc1 
+\pard\f0\fs22\lang1033 import libjevois as jevois\par
+import cv2\par
+import numpy as np\par
+import time\par
+\par
+class HSVDetector:\par
+    # ###################################################################################################\par
+    ## Constructor\par
+    def __init__(self):\par
+        # Instantiate a JeVois S to measure our processing framerate:\par
+        # self.timer = jevois.Timer("sandbox", 100, jevois.LOG_INFO)\par
+\par
+        self.outimg = None\par
+\par
+        # SPECIAL REPLACED BLUR CONSTANT\par
+        self.__blur_type = 0\par
+\par
+    # ###################################################################################################\par
+        # ALL CONSTANTS GO UNDER HERE (make sure to remove the self.__blur_type line)\par
+\par
+        \par
+        self.__blur_radius = 10.122386537480878\par
+\par
+        self.blur_output = None\par
+\par
+        self.__hsv_threshold_input = self.blur_output\par
+        self.__hsv_threshold_hue = [45.00060968174613, 102.81248335729883]\par
+        self.__hsv_threshold_saturation = [94.01978417266191, 255.0]\par
+        self.__hsv_threshold_value = [52.824858757062145, 255.0]\par
+\par
+        self.hsv_threshold_output = None\par
+\par
+        self.__cv_erode_src = self.hsv_threshold_output\par
+        self.__cv_erode_kernel = None\par
+        self.__cv_erode_anchor = (-1, -1)\par
+        self.__cv_erode_iterations = 1.0\par
+        self.__cv_erode_bordertype = cv2.BORDER_CONSTANT\par
+        self.__cv_erode_bordervalue = (-1)\par
+\par
+        self.cv_erode_output = None\par
+\par
+        self.__cv_dilate_src = self.cv_erode_output\par
+        self.__cv_dilate_kernel = None\par
+        self.__cv_dilate_anchor = (-1, -1)\par
+        self.__cv_dilate_iterations = 6.0\par
+        self.__cv_dilate_bordertype = cv2.BORDER_CONSTANT\par
+        self.__cv_dilate_bordervalue = (-1)\par
+\par
+        self.cv_dilate_output = None\par
+\par
+        self.__find_contours_input = self.cv_dilate_output\par
+        self.__find_contours_external_only = True\par
+\par
+        self.find_contours_output = None\par
+\par
+        self.__filter_contours_contours = self.find_contours_output\par
+        self.__filter_contours_min_area = 500.0\par
+        self.__filter_contours_min_perimeter = 0.0\par
+        self.__filter_contours_min_width = 0.0\par
+        self.__filter_contours_max_width = 100000.0\par
+        self.__filter_contours_min_height = 0.0\par
+        self.__filter_contours_max_height = 100000.0\par
+        self.__filter_contours_solidity = [0.0, 100.0]\par
+        self.__filter_contours_max_vertices = 10000.0\par
+        self.__filter_contours_min_vertices = 0.0\par
+        self.__filter_contours_min_ratio = 0.0\par
+        self.__filter_contours_max_ratio = 100.0\par
+\par
+        self.filter_contours_output = None\par
+\par
+\par
+\par
+\par
+        # END CONSTANTS\par
+    # ###################################################################################################\par
+\par
+    ## Process function with USB output\par
+\par
+    def processNoUSB(self, inframe):\par
+        source0 = inimg = inframe.getCvBGR()\par
+        self.outimg = inimg = inframe.getCvBGR()\par
+\par
+        # Start measuring image processing time (NOTE: does not account for input conversion time):\par
+        # self.timer.start()\par
+        # self.start_time = time.time()\par
+\par
+#################################################################################################\par
+\par
+        # BEGIN GRIP CODE\par
+\par
+#################################################################################################\par
+        """\par
+        Runs the pipeline and sets all outputs to new values.\par
+        """\par
+\par
+        # Step Blur0:\par
+        self.__blur_input = source0\par
+        (self.blur_output) = self.__blur(self.__blur_input, self.__blur_type, self.__blur_radius)\par
+\par
+        # Step HSV_Threshold0:\par
+        self.__hsv_threshold_input = self.blur_output\par
+        (self.hsv_threshold_output) = self.__hsv_threshold(self.__hsv_threshold_input, self.__hsv_threshold_hue, self.__hsv_threshold_saturation, self.__hsv_threshold_value)\par
+\par
+        # Step CV_erode0:\par
+        self.__cv_erode_src = self.hsv_threshold_output\par
+        (self.cv_erode_output) = self.__cv_erode(self.__cv_erode_src, self.__cv_erode_kernel, self.__cv_erode_anchor, self.__cv_erode_iterations, self.__cv_erode_bordertype, self.__cv_erode_bordervalue)\par
+\par
+        # Step CV_dilate0:\par
+        self.__cv_dilate_src = self.cv_erode_output\par
+        (self.cv_dilate_output) = self.__cv_dilate(self.__cv_dilate_src, self.__cv_dilate_kernel, self.__cv_dilate_anchor, self.__cv_dilate_iterations, self.__cv_dilate_bordertype, self.__cv_dilate_bordervalue)\par
+\par
+        # Step Find_Contours0:\par
+        self.__find_contours_input = self.cv_dilate_output\par
+        (self.find_contours_output) = self.__find_contours(self.__find_contours_input, self.__find_contours_external_only)\par
+\par
+        # Step Filter_Contours0:\par
+        self.__filter_contours_contours = self.find_contours_output\par
+        (self.filter_contours_output) = self.__filter_contours(self.__filter_contours_contours, self.__filter_contours_min_area, self.__filter_contours_min_perimeter, self.__filter_contours_min_width, self.__filter_contours_max_width, self.__filter_contours_min_height, self.__filter_contours_max_height, self.__filter_contours_solidity, self.__filter_contours_max_vertices, self.__filter_contours_min_vertices, self.__filter_contours_min_ratio, self.__filter_contours_max_ratio)\par
+\par
+\par
+ \par
+#################################################################################################\par
+\par
+        # END GRIP CODE\par
+\par
+##################################################################################################\par
+\par
+        # DEFAULT CUSTOM CODE\par
+\par
+        def getArea(con): # Gets the area of the contour\par
+            return cv2.contourArea(con)\par
+\par
+        def getYcoord(con): # Gets the Y coordinate of the contour center\par
+            M = cv2.moments(con)\par
+            cy = int(M['m01']/M['m00'])\par
+            return cy\par
+\par
+        def getXcoord(con): # Gets the X coordinate of the contour center\par
+            M = cv2.moments(con)\par
+            cy = int(M['m10']/M['m00'])\par
+            return cy\par
+\par
+        def sortByArea(conts) : # Returns an array sorted by area from smallest to largest\par
+            contourNum = len(conts) # Gets number of contours\par
+            sortedBy = sorted(conts, key=getArea) # sortedBy now has all the contours sorted by area\par
+            return sortedBy\par
+\par
+##################################################################################################\par
+\par
+        # PUT YOUR CUSTOM CODE HERE\par
+\par
+##################################################################################################\par
+\par
+        # Draws all contours on original image in red\par
+        # cv2.drawContours(self.outimg, self.filter_contours_output, -1, (0, 0, 255), 1)\par
+\par
+        # Gets number of contours\par
+        contourNum = len(self.filter_contours_output)\par
+\par
+        # Sorts contours by the smallest area first\par
+        newContours = sortByArea(self.filter_contours_output)\par
+\par
+        # Send the contour data over Serial\par
+        for i in range (contourNum):\par
+            cnt = newContours[i]\par
+            x,y,w,h = cv2.boundingRect(cnt) # Get the stats of the contour including width and height\par
+\par
+            # which contour, 0 is first\par
+            toSend = ("/" + str(i) +\par
+                     "/" + str(getArea(cnt)) +  # Area of contour\par
+                     "/" + str(round(getXcoord(cnt)-160, 2)) +  # x-coordinate of centroid of contour, -160 to 160 rounded to 2 decimal\par
+                     "/" + str(round(120-getYcoord(cnt), 2)) +  # y-coordinate of contour, -120 to 120 rounded to 2 decimal\par
+                     "/" + str(round(h, 2)) +  # Height of contour, 0-320 rounded to 2 decimal\par
+                     "/" + str(round(w, 2))) # Width of contour, 0-240 rounded to 2 decimal\par
+            jevois.sendSerial(toSend)\par
+\par
+        # Write a title:\par
+        # cv2.putText(self.outimg, "Nerdy Jevois No USB", (3, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)\par
+\par
+        # Write frames/s info from our timer into the edge map (NOTE: does not account for output conversion time):\par
+        # fps = self.timer.stop()\par
+        #height, width, channels = outimg.shape # if outimg is grayscale, change to: height, width = outimg.shape\par
+        # self.end_time = time.time()\par
+        # delta_time = self.end_time - self.start_time\par
+\par
+        height, width, channels = self.outimg.shape\par
+        # cv2.putText(outimg, fps, (3, height - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)\par
+\par
+    def process(self, inframe, outframe):\par
+        self.processNoUSB(inframe)\par
+\par
+        # Write a title:\par
+        # cv2.putText(self.outimg, "NerdyJevois USB", (3, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)\par
+\par
+        # Write frames/s info from our timer into the edge map (NOTE: does not account for output conversion time):\par
+        # fps = self.timer.stop()\par
+        #height, width, channels = outimg.shape # if outimg is grayscale, change to: height, width = outimg.shape\par
+        # height, width, channels = outimg.shape\par
+        # cv2.putText(outimg, fps, (3, height - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)\par
+\par
+        # Convert our BGR output image to video output format and send to host over USB. If your output image is not\par
+        # BGR, you can use sendCvGRAY(), sendCvRGB(), or sendCvRGBA() as appropriate:\par
+        outframe.sendCvBGR(self.outimg)\par
+        # outframe.sendCvGRAY(outimg)\par
+\par
+##################################################################################################\par
+\par
+        # END CUSTOM CODE\par
+\par
+###################################################################################################\par
+\par
+    # FUNCTIONS GO HERE (Anything that starts with "@staticmethod")\par
+    @staticmethod\par
+    def __blur(src, type, radius):\par
+        """Softens an image using one of several filters.\par
+        Args:\par
+            src: The source mat (numpy.ndarray).\par
+            type: The blurType to perform represented as an int.\par
+            radius: The radius for the blur as a float.\par
+        Returns:\par
+            A numpy.ndarray that has been blurred.\par
+        """\par
+        if(type is BlurType.Box_Blur):\par
+            ksize = int(2 * round(radius) + 1)\par
+            return cv2.blur(src, (ksize, ksize))\par
+        elif(type is BlurType.Gaussian_Blur):\par
+            ksize = int(6 * round(radius) + 1)\par
+            return cv2.GaussianBlur(src, (ksize, ksize), round(radius))\par
+        elif(type is BlurType.Median_Filter):\par
+            ksize = int(2 * round(radius) + 1)\par
+            return cv2.medianBlur(src, ksize)\par
+        else:\par
+            return cv2.bilateralFilter(src, -1, round(radius), round(radius))\par
+\par
+    @staticmethod\par
+    def __hsv_threshold(input, hue, sat, val):\par
+        """Segment an image based on hue, saturation, and value ranges.\par
+        Args:\par
+            input: A BGR numpy.ndarray.\par
+            hue: A list of two numbers the are the min and max hue.\par
+            sat: A list of two numbers the are the min and max saturation.\par
+            lum: A list of two numbers the are the min and max value.\par
+        Returns:\par
+            A black and white numpy.ndarray.\par
+        """\par
+        out = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)\par
+        return cv2.inRange(out, (hue[0], sat[0], val[0]),  (hue[1], sat[1], val[1]))\par
+\par
+    @staticmethod\par
+    def __cv_erode(src, kernel, anchor, iterations, border_type, border_value):\par
+        """Expands area of lower value in an image.\par
+        Args:\par
+           src: A numpy.ndarray.\par
+           kernel: The kernel for erosion. A numpy.ndarray.\par
+           iterations: the number of times to erode.\par
+           border_type: Opencv enum that represents a border type.\par
+           border_value: value to be used for a constant border.\par
+        Returns:\par
+            A numpy.ndarray after erosion.\par
+        """\par
+        return cv2.erode(src, kernel, anchor, iterations = (int) (iterations +0.5),\par
+                            borderType = border_type, borderValue = border_value)\par
+\par
+    @staticmethod\par
+    def __cv_dilate(src, kernel, anchor, iterations, border_type, border_value):\par
+        """Expands area of higher value in an image.\par
+        Args:\par
+           src: A numpy.ndarray.\par
+           kernel: The kernel for dilation. A numpy.ndarray.\par
+           iterations: the number of times to dilate.\par
+           border_type: Opencv enum that represents a border type.\par
+           border_value: value to be used for a constant border.\par
+        Returns:\par
+            A numpy.ndarray after dilation.\par
+        """\par
+        return cv2.dilate(src, kernel, anchor, iterations = (int) (iterations +0.5),\par
+                            borderType = border_type, borderValue = border_value)\par
+\par
+    @staticmethod\par
+    def __find_contours(input, external_only):\par
+        """Sets the values of pixels in a binary image to their distance to the nearest black pixel.\par
+        Args:\par
+            input: A numpy.ndarray.\par
+            external_only: A boolean. If true only external contours are found.\par
+        Return:\par
+            A list of numpy.ndarray where each one represents a contour.\par
+        """\par
+        if(external_only):\par
+            mode = cv2.RETR_EXTERNAL\par
+        else:\par
+            mode = cv2.RETR_LIST\par
+        method = cv2.CHAIN_APPROX_SIMPLE\par
+        im2, contours, hierarchy =cv2.findContours(input, mode=mode, method=method)\par
+        return contours\par
+\par
+    @staticmethod\par
+    def __filter_contours(input_contours, min_area, min_perimeter, min_width, max_width,\par
+                        min_height, max_height, solidity, max_vertex_count, min_vertex_count,\par
+                        min_ratio, max_ratio):\par
+        """Filters out contours that do not meet certain criteria.\par
+        Args:\par
+            input_contours: Contours as a list of numpy.ndarray.\par
+            min_area: The minimum area of a contour that will be kept.\par
+            min_perimeter: The minimum perimeter of a contour that will be kept.\par
+            min_width: Minimum width of a contour.\par
+            max_width: MaxWidth maximum width.\par
+            min_height: Minimum height.\par
+            max_height: Maximimum height.\par
+            solidity: The minimum and maximum solidity of a contour.\par
+            min_vertex_count: Minimum vertex Count of the contours.\par
+            max_vertex_count: Maximum vertex Count.\par
+            min_ratio: Minimum ratio of width to height.\par
+            max_ratio: Maximum ratio of width to height.\par
+        Returns:\par
+            Contours as a list of numpy.ndarray.\par
+        """\par
+        output = []\par
+        for contour in input_contours:\par
+            x,y,w,h = cv2.boundingRect(contour)\par
+            if (w < min_width or w > max_width):\par
+                continue\par
+            if (h < min_height or h > max_height):\par
+                continue\par
+            area = cv2.contourArea(contour)\par
+            if (area < min_area):\par
+                continue\par
+            if (cv2.arcLength(contour, True) < min_perimeter):\par
+                continue\par
+            hull = cv2.convexHull(contour)\par
+            solid = 100 * area / cv2.contourArea(hull)\par
+            if (solid < solidity[0] or solid > solidity[1]):\par
+                continue\par
+            if (len(contour) < min_vertex_count or len(contour) > max_vertex_count):\par
+                continue\par
+            ratio = (float)(w) / h\par
+            if (ratio < min_ratio or ratio > max_ratio):\par
+                continue\par
+            output.append(contour)\par
+        return output\par
+\par
+\par
+\par
+#BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filter')\par
+
+\pard\par
+}
+ 
